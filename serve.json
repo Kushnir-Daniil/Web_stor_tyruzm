@@ -1,0 +1,9 @@
+{
+  "cleanUrls": false,
+  "redirects": [
+    { "source": "/games", "destination": "/public/games.html" },
+    { "source": "/games/", "destination": "/public/games.html" },
+    { "source": "/public/games", "destination": "/public/games.html" },
+    { "source": "/play", "destination": "/public/play.html" }
+  ]
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/public/games.html">
+  <script src="js/mini-games.js"></script>
+  <script>
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var gameId = p.get("game");
+      var from = p.get("from");
+      if (typeof MiniGames !== "undefined" && gameId) {
+        var game = MiniGames.getGameById(gameId);
+        if (game) {
+          MiniGames.saveReturnUrls();
+          var url = MiniGames.getBuildUrl(game);
+          location.replace(url);
+        }
+      }
+      location.replace("/public/games.html" + (from ? "?from=" + encodeURIComponent(from) : ""));
+    })();
+  </script>
+  <title>Перенаправлення…</title>
+</head>
+<body>
+  <p><a href="/public/games.html">Міні-ігри</a></p>
+</body>
+</html>
