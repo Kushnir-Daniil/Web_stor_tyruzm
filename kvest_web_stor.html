@@ -70,7 +70,7 @@
         .content-scroller::-webkit-scrollbar { display: none; }
         .content-scroller { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* --- СТИЛІ ВКЛАДОК (НОВЕ) --- */
+        /* --- СТИЛІ ВКЛАДОК --- */
         .hidden-tab { display: none !important; }
         .tab-content { width: 100%; display: flex; flex-direction: column; align-items: center; }
         
@@ -261,6 +261,86 @@
         .guide-card__desc { font-size: 10px; color: #6b7280; }
         
         .btn-modal-close { margin-top: 24px; width: 100%; background-color: #e5e7eb; color: #374151; font-weight: 700; padding: 8px 0; border-radius: 12px; }
+
+        /* --- СТИЛІ ДЛЯ КАРТОК МІНІ-ІГОР --- */
+        .games-list-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .game-reward-card {
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-reward-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .game-reward-card__text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .game-reward-card__title {
+            font-size: 16px;
+            font-weight: 900;
+            color: #CA4E5D;
+            margin-bottom: 4px;
+        }
+
+        .game-reward-card__desc {
+            font-size: 12px;
+            color: #334155;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .game-reward-card__points {
+            background-color: #FEF5DA;
+            color: #d97706;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #F6E1AB;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-start-game {
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            width: 100%;
+        }
+        
+        .btn-start-game:active {
+            transform: scale(0.96);
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <body>
@@ -327,9 +407,9 @@
                     <div class="controls-row">
                         <button onclick="alert('Підказка: ' + currentHint)" class="btn-circle">💡</button>
                         <button onclick="prevLoc()" class="btn-circle">⏮</button>
-                        <button onclick="switchTab('tab-map')" class="btn-circle btn-circle--large">🗺️</button>
+                        <button onclick="switchTab('tab-games')" class="btn-circle btn-circle--large">▶️</button>
                         <button onclick="nextLoc()" class="btn-circle">⏭</button>
-                        <button class="btn-circle">⭐</button>
+                        <button onclick="switchTab('tab-map')" class="btn-circle">🗺️</button>
                     </div>
                 </div>
             </div>
@@ -349,6 +429,51 @@
                     <p>Рівень: <strong>Шукач Пригод</strong></p>
                     <p>Зібрано балів: <strong id="profile-score">0</strong></p>
                     <div style="font-size: 40px; margin-top: 20px;">🏆</div>
+                </div>
+            </div>
+
+            <div id="tab-games" class="tab-content hidden-tab">
+                
+                <div class="generic-card" style="margin-bottom: 8px; padding: 24px 16px;">
+                    <h2>Міні-ігри</h2>
+                    <p>Проходь випробування та заробляй бонуси для свого профілю!</p>
+                </div>
+
+                <div class="games-list-container">
+                    
+                    <div class="game-reward-card">
+                        <div class="game-reward-card__header">
+                            <div class="game-reward-card__text">
+                                <h3 class="game-reward-card__title">Пазл вежі</h3>
+                                <p class="game-reward-card__desc">Збери старовинну фреску з розкиданих шматочків за відведений час.</p>
+                            </div>
+                            <div class="game-reward-card__points">🏆 +500</div>
+                        </div>
+                        <button class="btn-start-game" onclick="alert('Запуск гри 1')">Запустити гру ▶</button>
+                    </div>
+
+                    <div class="game-reward-card">
+                        <div class="game-reward-card__header">
+                            <div class="game-reward-card__text">
+                                <h3 class="game-reward-card__title">Знайди різницю</h3>
+                                <p class="game-reward-card__desc">Правда чи вигадка? Перевір свої знання про таємниці міста.</p>
+                            </div>
+                            <div class="game-reward-card__points">🏆 +300</div>
+                        </div>
+                        <button class="btn-start-game" style="background-color: #10b981; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);" onclick="alert('Запуск гри 2')">Запустити гру ▶</button>
+                    </div>
+
+                    <div class="game-reward-card">
+                        <div class="game-reward-card__header">
+                            <div class="game-reward-card__text">
+                                <h3 class="game-reward-card__title">Алхімія Барона</h3>
+                                <p class="game-reward-card__desc">Змішай правильні інгредієнти, щоб створити легендарну каву.</p>
+                            </div>
+                            <div class="game-reward-card__points">🏆 +750</div>
+                        </div>
+                        <button class="btn-start-game" style="background-color: #f59e0b; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);" onclick="alert('Запуск гри 3')">Запустити гру ▶</button>
+                    </div>
+
                 </div>
             </div>
 
@@ -421,6 +546,8 @@
             document.querySelectorAll('.bottom-nav button').forEach(btn => {
                 btn.classList.remove('nav-item--active');
                 btn.classList.add('nav-item');
+                // Не активуємо жодну кнопку меню, якщо ми на вкладці з іграми, 
+                // оскільки для ігор немає окремої кнопки в нижньому меню
                 if(btn.dataset.target === tabId) {
                     btn.classList.remove('nav-item');
                     btn.classList.add('nav-item--active');
@@ -445,7 +572,6 @@
             'kanyon': { name: 'Смотрицький Каньйон' }
         };
 
-        // Розширена матриця квестів (додано всі бракуючі локації)
         const questMatrix = {
             'zamok': {
                 'pysanka': { title: 'Орнаменти старої фортеці', story: '<p>Давні майстри висікали захисні знаки на стінах замку.</p>', hintText: 'Оглянь стіну біля Денної вежі.', missions: [{ icon: '🔍', desc: 'Знайти висічений солярний знак', points: 300, completed: false }] },
@@ -498,7 +624,7 @@
             currentLocation = dragonRoutes[dragonKey][0];
             changeDragonMenu();
             renderPage();
-            switchTab('tab-story'); // Автоматично повертати на вкладку квесту при зміні гіда
+            switchTab('tab-story'); 
         }
 
         function toggleMission(idx) {
@@ -532,7 +658,7 @@
             
             const currentScore = calculateTotalScore();
             document.getElementById('total-score').innerText = currentScore;
-            document.getElementById('profile-score').innerText = currentScore; // Оновлюємо і у профілі
+            document.getElementById('profile-score').innerText = currentScore; 
 
             const contentData = questMatrix[currentLocation]?.[currentDragon];
             const mContainer = document.getElementById('missions-container');
