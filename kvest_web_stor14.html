@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мобільний Квест Кам'янця</title>
+    <style>
+        /* --- БАЗОВІ СТИЛІ ТА СКИДАННЯ --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+            background-color: #f3f4f6; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        button { font-family: inherit; background: none; border: none; cursor: pointer; }
+
+        /* --- ГОЛОВНИЙ МОБІЛЬНИЙ КОНТЕЙНЕР --- */
+        .mobile-container {
+            width: 100%;
+            max-width: 448px;
+            height: 100dvh;
+            margin: 0 auto;
+            background-color: #79C9F9; /* Колір неба */
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        /* --- ДЕКОРАТИВНІ ХМАРИНКИ --- */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+        }
+        .cloud::before, .cloud::after {
+            content: ''; position: absolute; background: white; border-radius: 50%;
+        }
+        .cloud--small { top: 32px; left: 16px; width: 80px; height: 24px; }
+        .cloud--small::before { width: 40px; height: 40px; top: -20px; left: 8px; }
+        .cloud--small::after { width: 32px; height: 32px; top: -12px; left: 40px; }
+
+        .cloud--large { top: 64px; right: 16px; width: 96px; height: 32px; }
+        .cloud--large::before { width: 48px; height: 48px; top: -24px; left: 12px; }
+        .cloud--large::after { width: 40px; height: 40px; top: -16px; left: 48px; }
+
+        /* --- ВНУТРІШНІЙ СКРОЛ-КОНТЕНТ --- */
+        .content-scroller {
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 48px;
+            padding-bottom: 96px;
+            padding-left: 16px;
+            padding-right: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        .content-scroller::-webkit-scrollbar { display: none; }
+        .content-scroller { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- СТИЛІ ВКЛАДОК (НОВЕ) --- */
+        .hidden-tab { display: none !important; }
+        .tab-content { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        .generic-card {
+            background-color: #FEF5DA;
+            width: 100%;
+            border-radius: 16px;
+            padding: 32px 24px;
+            margin-top: 40px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 4px solid #F6E1AB;
+            text-align: center;
+        }
+        .generic-card h2 { color: #CA4E5D; margin-bottom: 16px; font-weight: 900; }
+        .generic-card p { color: #334155; font-size: 15px; font-weight: 500; line-height: 1.5; margin-bottom: 16px;}
+
+        /* --- ДЕКОРАТИВНІ ПРАПОРЦІ НА ВЕЖАХ --- */
+        .flag-item {
+            width: 24px; height: 16px; background-color: #3b82f6; border-bottom: 2px solid #facc15;
+            position: absolute; top: -32px; z-index: 20;
+        }
+        .flag-item--left { left: 0; }
+        .flag-item--right { right: 0; }
+        .flag-pole {
+            width: 2px; height: 40px; background-color: #374151; position: absolute; top: 0;
+        }
+        .flag-item--left .flag-pole { left: -1px; }
+        .flag-item--right .flag-pole { right: -1px; }
+
+        /* --- ЕЛЕМЕНТИ ЗАМКОВОЇ СТІНИ ТА ВЕЖ --- */
+        .towers-header {
+            display: flex; justify-content: space-between; width: 100%; padding-left: 8px; padding-right: 8px; z-index: 10;
+        }
+        .tower-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .tower-roof {
+            width: 0; height: 0; border-left: 40px solid transparent; border-right: 40px solid transparent;
+            border-bottom: 80px solid #E35D5B; position: relative;
+        }
+        .tower-body {
+            width: 70px; height: 40px; background-color: #F6E1AB; border-left: 4px solid #E2CB92;
+            border-right: 4px solid #E2CB92; border-top: 4px solid #E2CB92; border-top-left-radius: 2px;
+            border-top-right-radius: 2px; display: flex; justify-content: center; gap: 8px; padding-top: 4px;
+        }
+        .tower-window {
+            width: 12px; height: 20px; background-color: #1f2937; border-top-left-radius: 9999px;
+            border-top-right-radius: 9999px; opacity: 0.3;
+        }
+        .wall-center { flex: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; opacity: 0.8; }
+        .wall-block { width: 32px; height: 48px; background-color: #F6E1AB; border: 2px solid #E2CB92; }
+        .gate-arch {
+            width: 40px; height: 64px; background-color: #E35D5B; border-top-left-radius: 9999px;
+            border-top-right-radius: 9999px; border: 2px solid #f87171; z-index: 10; margin-left: -8px;
+        }
+        .wall-block--right { width: 48px; height: 40px; background-color: #F6E1AB; border: 2px solid #E2CB92; margin-left: -8px; }
+
+        /* --- ГОЛОВНА КАРТКА КОНТЕНТУ --- */
+        .main-content-card {
+            background-color: #F6E1AB; width: 100%; flex: 1; border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #E2CB92; border-right: 4px solid #E2CB92; display: flex;
+            flex-direction: column; align-items: center; position: relative; z-index: 20; padding-bottom: 16px;
+        }
+        .battlements-container {
+            width: 100%; display: flex; justify-content: space-between; position: absolute; top: -16px; left: 0;
+        }
+        .battlement-block {
+            width: 16px; height: 16px; background-color: #F6E1AB; border-left: 4px solid #E2CB92;
+            border-right: 4px solid #E2CB92; border-top: 4px solid #E2CB92;
+        }
+
+        /* --- БАНЕР-СТРІЧКА НАЗВИ ЛОКАЦІЇ --- */
+        .ribbon-banner {
+            background-color: #CA4E5D; color: #ffffff; font-weight: 900; font-size: 20px;
+            padding: 12px 40px; border-radius: 6px; margin-top: 24px; position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .ribbon-tail-left {
+            position: absolute; top: 0; left: -16px; border-top: 26px solid transparent;
+            border-bottom: 26px solid transparent; border-right: 20px solid #A53A46;
+        }
+        .ribbon-tail-right {
+            position: absolute; top: 0; right: -16px; border-top: 26px solid transparent;
+            border-bottom: 26px solid transparent; border-left: 20px solid #A53A46;
+        }
+
+        /* --- ПАПЕРОВА КАРТКА КВЕСТУ --- */
+        .quest-paper {
+            background-color: #FEF5DA; width: 90%; border-radius: 12px; padding: 20px; margin-top: 24px;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); position: relative; flex: 1; color: #4A4A4A;
+        }
+        .avatar-dragon {
+            position: absolute; bottom: -32px; left: -16px; font-size: 60px;
+            filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.1)); z-index: 30;
+            transition: transform 0.15s ease; cursor: pointer;
+        }
+        .avatar-dragon:active { transform: scale(0.95); }
+
+        /* Панель статистики */
+        .stats-badge-row {
+            display: flex; justify-content: space-between; align-items: center; font-size: 10px;
+            font-weight: 700; color: #A53A46; margin-bottom: 16px; background-color: rgba(255, 255, 255, 0.5);
+            padding: 8px; border-radius: 8px; border: 1px solid #F6E1AB;
+        }
+        .stats-score-value { font-size: 20px; }
+
+        /* Текстовий контент */
+        .story-title { font-weight: 900; font-size: 18px; margin-bottom: 8px; color: #CA4E5D; line-height: 1.25; }
+        .story-text { font-size: 14px; font-weight: 500; line-height: 1.625; margin-bottom: 16px; color: #334155; }
+        .section-heading { font-size: 12px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .missions-list { display: flex; flex-direction: column; gap: 8px; z-index: 10; position: relative; }
+
+        /* --- КАРТКА ЗАВДАННЯ (ДИНАМІЧНА) --- */
+        .mission-card {
+            background-color: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px;
+            display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s ease;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .mission-card:active { transform: scale(0.95); }
+        .mission-card--completed { background-color: #D1FAE5; border-color: #34d399; }
+        .mission-card__icon { font-size: 24px; }
+        .mission-card__text-content { flex: 1; }
+        .mission-card__desc { font-size: 11px; font-weight: 700; color: #334155; line-height: 1.25; }
+        .mission-card__points { font-size: 9px; font-weight: 900; color: #d97706; margin-top: 4px; }
+        .mission-card__checkmark {
+            width: 24px; height: 24px; border-radius: 9999px; border: 2px solid currentColor;
+            color: #d1d5db; display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .mission-card--completed .mission-card__checkmark { color: #059669; }
+
+        /* --- КНОПКИ ДІЙ ТА НАВІГАЦІЇ --- */
+        .controls-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 32px; width: 100%; padding: 0 16px; }
+        .btn-circle {
+            width: 40px; height: 40px; background-color: #FEF5DA; border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: flex; align-items: center;
+            justify-content: center; font-size: 18px; color: #000000; transition: transform 0.15s ease;
+        }
+        .btn-circle:active { transform: scale(0.9); }
+        .btn-circle--large { width: 56px; height: 56px; font-size: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 2px solid #ffffff; }
+
+        /* --- НИЖНЄ МЕНЮ (НИЖНЯ НАВІГАЦІЯ) --- */
+        .bottom-nav {
+            background-color: #F6E1AB; height: 80px; width: 100%; position: absolute; bottom: 0;
+            border-top-left-radius: 24px; border-top-right-radius: 24px; display: flex;
+            justify-content: space-around; align-items: center; padding: 0 16px 8px 16px; z-index: 30;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; transition: transform 0.15s ease; }
+        .nav-item:active { transform: scale(0.9); }
+        
+        .nav-item--active {
+            display: flex; flex-direction: column; align-items: center; background-color: #FEF5DA;
+            padding: 8px 24px; border-radius: 16px; margin-top: -24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffffff; opacity: 1; transition: all 0.2s ease;
+        }
+        .nav-item__icon { font-size: 24px; margin-bottom: 4px; }
+        .nav-item--active .nav-item__icon { font-size: 30px; }
+        .nav-item__label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+        .nav-item--active .nav-item__label { color: #CA4E5D; }
+
+        /* --- МОДАЛЬНЕ ВІКНО ОБРАННЯ ГІДА --- */
+        .modal-overlay {
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-color: rgba(0, 0, 0, 0.6);
+            z-index: 50; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
+        .modal-overlay.hidden { display: none; }
+        
+        .modal-box {
+            background-color: #FEF5DA; width: 83.33%; border-radius: 24px; padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 4px solid #F6E1AB;
+        }
+        .modal-title { text-align: center; font-weight: 900; font-size: 20px; color: #CA4E5D; margin-bottom: 16px; }
+        .guide-list { display: flex; flex-direction: column; gap: 12px; }
+        
+        .guide-card {
+            width: 100%; display: flex; align-items: center; gap: 16px; background-color: #ffffff;
+            padding: 12px; border-radius: 12px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent; transition: all 0.15s ease;
+        }
+        .guide-card:active { transform: scale(0.95); }
+        .guide-card--pysanka:hover { border-color: #c084fc; }
+        .guide-card--baron:hover { border-color: #34d399; }
+        .guide-card--klym:hover { border-color: #fbbf24; }
+        
+        .guide-card__icon { font-size: 36px; }
+        .guide-card__info { text-align: left; }
+        .guide-card__name { font-weight: 700; font-size: 14px; }
+        .guide-card__desc { font-size: 10px; color: #6b7280; }
+        
+        .btn-modal-close { margin-top: 24px; width: 100%; background-color: #e5e7eb; color: #374151; font-weight: 700; padding: 8px 0; border-radius: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="cloud cloud--small"></div>
+        <div class="cloud cloud--large"></div>
+
+        <div class="content-scroller">
+
+            <div id="tab-home" class="tab-content hidden-tab">
+                <div class="generic-card">
+                    <h2>Мобільний Квест Кам'янця</h2>
+                    <p>Вітаємо мандрівнику! Обери свого гіда у вкладці "Казка" та розпочни захоплюючу подорож вулицями стародавнього міста.</p>
+                    <div style="font-size: 40px; margin-top: 20px;">🏰</div>
+                </div>
+            </div>
+
+            <div id="tab-story" class="tab-content">
+                <div class="towers-header">
+                    <div class="tower-wrapper">
+                        <div class="tower-roof">
+                            <div class="flag-item flag-item--left"><div class="flag-pole"></div></div>
+                        </div>
+                        <div class="tower-body"><div class="tower-window"></div></div>
+                    </div>
+                    <div class="tower-wrapper">
+                        <div class="tower-roof">
+                            <div class="flag-item flag-item--right"><div class="flag-pole"></div></div>
+                        </div>
+                        <div class="tower-body"><div class="tower-window"></div></div>
+                    </div>
+                </div>
+
+                <div class="main-content-card">
+                    <div class="battlements-container">
+                        <div class="battlement-block"></div><div class="battlement-block"></div>
+                        <div class="battlement-block"></div><div class="battlement-block"></div>
+                        <div class="battlement-block"></div>
+                    </div>
+
+                    <div class="ribbon-banner">
+                        <span id="banner-title">Казка</span>
+                        <div class="ribbon-tail-left"></div>
+                        <div class="ribbon-tail-right"></div>
+                    </div>
+
+                    <div class="quest-paper">
+                        <div id="dragon-avatar" class="avatar-dragon" onclick="changeDragonMenu()"></div>
+
+                        <div class="stats-badge-row">
+                            <span>Бали: <span id="total-score" class="stats-score-value">0</span></span>
+                            <span>Точка <span id="route-progress">1/5</span></span>
+                        </div>
+
+                        <h2 id="story-title" class="story-title">Завантаження...</h2>
+                        <div id="story-content" class="story-text"></div>
+                        
+                        <h3 class="section-heading">Завдання локації:</h3>
+                        <div id="missions-container" class="missions-list"></div>
+                    </div>
+
+                    <div class="controls-row">
+                        <button onclick="alert('Підказка: ' + currentHint)" class="btn-circle">💡</button>
+                        <button onclick="prevLoc()" class="btn-circle">⏮</button>
+                        <button onclick="switchTab('tab-map')" class="btn-circle btn-circle--large">🗺️</button>
+                        <button onclick="nextLoc()" class="btn-circle">⏭</button>
+                        <button class="btn-circle">⭐</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-map" class="tab-content hidden-tab">
+                <div class="generic-card">
+                    <h2>Маршрут</h2>
+                    <p>Тут буде відображено інтерактивну карту з точками вашого квесту.</p>
+                    <p>Поточна зупинка: <strong><span id="map-current-loc">Фортеця</span></strong></p>
+                    <div style="font-size: 40px; margin-top: 20px;">🗺️</div>
+                </div>
+            </div>
+
+            <div id="tab-profile" class="tab-content hidden-tab">
+                <div class="generic-card">
+                    <h2>Ваш Профіль</h2>
+                    <p>Рівень: <strong>Шукач Пригод</strong></p>
+                    <p>Зібрано балів: <strong id="profile-score">0</strong></p>
+                    <div style="font-size: 40px; margin-top: 20px;">🏆</div>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="bottom-nav">
+            <button class="nav-item" data-target="tab-home" onclick="switchTab('tab-home')">
+                <span class="nav-item__icon" style="color: #ea580c;">🏠</span>
+                <span class="nav-item__label">Головна</span>
+            </button>
+            <button class="nav-item--active" data-target="tab-story" onclick="switchTab('tab-story')">
+                <span class="nav-item__icon">📘</span>
+                <span class="nav-item__label">Казка</span>
+            </button>
+            <button class="nav-item" data-target="tab-map" onclick="switchTab('tab-map')">
+                <span class="nav-item__icon">🎨</span>
+                <span class="nav-item__label">Маршрут</span>
+            </button>
+            <button class="nav-item" data-target="tab-profile" onclick="switchTab('tab-profile')">
+                <span class="nav-item__icon" style="color: #3b82f6;">👤</span>
+                <span class="nav-item__label">Профіль</span>
+            </button>
+        </nav>
+
+        <div id="dragon-modal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h3 class="modal-title">Обери Гіда</h3>
+                <div class="guide-list">
+                    <button onclick="selectDragon('pysanka')" class="guide-card guide-card--pysanka">
+                        <span class="guide-card__icon">🎨</span>
+                        <div class="guide-card__info">
+                            <p class="guide-card__name">Майстер Писанка</p>
+                            <p class="guide-card__desc">Традиції міста</p>
+                        </div>
+                    </button>
+                    <button onclick="selectDragon('baron')" class="guide-card guide-card--baron">
+                        <span class="guide-card__icon">☕</span>
+                        <div class="guide-card__info">
+                            <p class="guide-card__name">Кавовий Барон</p>
+                            <p class="guide-card__desc">Гастро-маршрут</p>
+                        </div>
+                    </button>
+                    <button onclick="selectDragon('klym')" class="guide-card guide-card--klym">
+                        <span class="guide-card__icon">🧭</span>
+                        <div class="guide-card__info">
+                            <p class="guide-card__name">Мандрівник Клим</p>
+                            <p class="guide-card__desc">Пригоди та скаутинг</p>
+                        </div>
+                    </button>
+                </div>
+                <button onclick="changeDragonMenu()" class="btn-modal-close">Закрити</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentDragon = 'pysanka';
+        let currentLocation = 'zamok'; 
+        let currentHint = "";
+
+        // Функція перемикання вкладок
+        function switchTab(tabId) {
+            // Ховаємо всі вкладки
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-tab'));
+            // Показуємо потрібну
+            document.getElementById(tabId).classList.remove('hidden-tab');
+            
+            // Оновлюємо активний стан кнопок меню
+            document.querySelectorAll('.bottom-nav button').forEach(btn => {
+                btn.classList.remove('nav-item--active');
+                btn.classList.add('nav-item');
+                if(btn.dataset.target === tabId) {
+                    btn.classList.remove('nav-item');
+                    btn.classList.add('nav-item--active');
+                }
+            });
+        }
+
+        const dragonRoutes = {
+            'pysanka': ['zamok', 'ratusha', 'dzvinytsia', 'brama', 'kanyon'],
+            'baron': ['zamok', 'dzvinytsia', 'mist', 'brama', 'kanyon'],
+            'klym': ['zamok', 'ratusha', 'mist', 'brama', 'kanyon']
+        };
+
+        const dragonAvatars = { 'pysanka': '🎨', 'baron': '☕', 'klym': '🧭' };
+
+        const allLocations = {
+            'zamok': { name: 'Фортеця' },
+            'ratusha': { name: 'Ратуша' },
+            'dzvinytsia': { name: 'Дзвіниця' },
+            'brama': { name: 'Міська Брама' },
+            'mist': { name: 'Замковий Міст' },
+            'kanyon': { name: 'Смотрицький Каньйон' }
+        };
+
+        // Розширена матриця квестів (додано всі бракуючі локації)
+        const questMatrix = {
+            'zamok': {
+                'pysanka': { title: 'Орнаменти старої фортеці', story: '<p>Давні майстри висікали захисні знаки на стінах замку.</p>', hintText: 'Оглянь стіну біля Денної вежі.', missions: [{ icon: '🔍', desc: 'Знайти висічений солярний знак', points: 300, completed: false }] },
+                'baron': { title: 'Перша залізна турка', story: '<p>Гарнізони варили каву за особливим рецептом.</p>', hintText: 'Шукай найглибший каземат.', missions: [{ icon: '📟', desc: 'Розгадати рецепт кави', points: 400, completed: false }] },
+                'klym': { title: 'Секретні мапи', story: '<p>Клим сховав спорядження в потаємній ніші.</p>', hintText: 'Північно-західне крило.', missions: [{ icon: '🏹', desc: 'Визначити азимут', points: 250, completed: false }] }
+            },
+            'ratusha': {
+                'pysanka': { title: 'Скриня ремесел', story: '<p>Тут зберігалися зразки міських печаток.</p>', hintText: 'Вхід в підземелля.', missions: [{ icon: '⚖️', desc: 'Розпізнати гільдійський знак', points: 300, completed: false }] },
+                'klym': { title: 'Шпиль Вежі', story: '<p>Флюгер Ратуші для прогнозування погоди.</p>', hintText: 'Механічний годинник.', missions: [{ icon: '🔔', desc: 'Вирахувати похибку', points: 200, completed: false }] }
+            },
+            'dzvinytsia': {
+                'pysanka': { title: 'Дзвони з орнаментом', story: '<p>Кожен дзвін відливався з унікальним візерунком та датою.</p>', hintText: 'Подивись на малий дзвін знизу.', missions: [{ icon: '🔔', desc: 'Знайти дату відливу', points: 200, completed: false }] },
+                'baron': { title: 'Схованка кардамону', story: '<p>Купці переховували дорогі прянощі від митників.</p>', hintText: 'Потаємне заглиблення зліва.', missions: [{ icon: '📂', desc: 'Знайти нішу', points: 400, completed: false }] }
+            },
+            'mist': {
+                'baron': { title: 'Податок на спеції', story: '<p>За проїзд мостом купці платили мішком кавових зерен.</p>', hintText: 'Шукай старий митний знак.', missions: [{ icon: '📜', desc: 'Зробити фото митного знаку', points: 250, completed: false }] },
+                'klym': { title: 'Висота польоту', story: '<p>Скаути колись вимірювали висоту мосту, кидаючи камінь.</p>', hintText: 'Місце на середині мосту.', missions: [{ icon: '⏱️', desc: 'Обчислити висоту мосту', points: 400, completed: false }] }
+            },
+            'brama': {
+                'pysanka': { title: 'Різьблені ворота', story: '<p>Брама прикрашена давньою різьбою з мотивами природи.</p>', hintText: 'Оглянь верхню арку брами.', missions: [{ icon: '🚪', desc: 'Порахувати вирізьблені дубові листки', points: 150, completed: false }] },
+                'baron': { title: 'Контрабанда кави', story: '<p>Під брамою існував таємний хід торговців-контрабандистів.</p>', hintText: 'Камінь з дивною подряпиною.', missions: [{ icon: '☕', desc: 'Виявити сховок', points: 350, completed: false }] },
+                'klym': { title: 'Вартові шляхи', story: '<p>Дізнайся, як варта обходила мури, щоб залишатися непомітним.</p>', hintText: 'Шукай сліпу зону вежі.', missions: [{ icon: '👁️', desc: 'Пройти невидимим маршрутом (скан QR)', points: 300, completed: false }] }
+            },
+            'kanyon': {
+                'pysanka': { title: 'Гончарна глина', story: '<p>На схилах каньйону майстри добували найкращу глину.</p>', hintText: 'Спуск до річки, оглянь берег.', missions: [{ icon: '🏺', desc: 'Відшукати вихід червоної глини', points: 300, completed: false }] },
+                'baron': { title: 'Джерельна вода', story: '<p>Для ідеальної кави барон завжди брав воду з чистого джерела.</p>', hintText: 'Джерело біля старого водоспаду.', missions: [{ icon: '💧', desc: 'Знайти джерело', points: 150, completed: false }] },
+                'klym': { title: 'Скелелазний маршрут', story: '<p>Каньйон — ідеальне місце для тренування альпіністів.</p>', hintText: 'Скеля з вибитими уступами.', missions: [{ icon: '🧗', desc: 'Дістатися першого тренувального гаку', points: 500, completed: false }] }
+            }
+        };
+
+        function nextLoc() {
+            const route = dragonRoutes[currentDragon];
+            let idx = route.indexOf(currentLocation);
+            if (idx < route.length - 1) { currentLocation = route[idx + 1]; renderPage(); }
+            else { alert("Ви завершили маршрут! Час перевірити профіль."); switchTab('tab-profile'); }
+        }
+
+        function prevLoc() {
+            const route = dragonRoutes[currentDragon];
+            let idx = route.indexOf(currentLocation);
+            if (idx > 0) { currentLocation = route[idx - 1]; renderPage(); }
+        }
+
+        function changeDragonMenu() {
+            document.getElementById('dragon-modal').classList.toggle('hidden');
+        }
+
+        function selectDragon(dragonKey) {
+            currentDragon = dragonKey;
+            currentLocation = dragonRoutes[dragonKey][0];
+            changeDragonMenu();
+            renderPage();
+            switchTab('tab-story'); // Автоматично повертати на вкладку квесту при зміні гіда
+        }
+
+        function toggleMission(idx) {
+            if(questMatrix[currentLocation] && questMatrix[currentLocation][currentDragon]) {
+                const mission = questMatrix[currentLocation][currentDragon].missions[idx];
+                mission.completed = !mission.completed;
+                renderPage();
+            }
+        }
+
+        function calculateTotalScore() {
+            let total = 0;
+            Object.keys(questMatrix).forEach(loc => {
+                if (questMatrix[loc][currentDragon]) {
+                    questMatrix[loc][currentDragon].missions.forEach(m => {
+                        if (m.completed) total += m.points;
+                    });
+                }
+            });
+            return total;
+        }
+
+        function renderPage() {
+            document.getElementById('dragon-avatar').innerText = dragonAvatars[currentDragon];
+            document.getElementById('banner-title').innerText = allLocations[currentLocation].name;
+            document.getElementById('map-current-loc').innerText = allLocations[currentLocation].name;
+            
+            const route = dragonRoutes[currentDragon];
+            const activeIdx = route.indexOf(currentLocation);
+            document.getElementById('route-progress').innerText = `${activeIdx + 1}/${route.length}`;
+            
+            const currentScore = calculateTotalScore();
+            document.getElementById('total-score').innerText = currentScore;
+            document.getElementById('profile-score').innerText = currentScore; // Оновлюємо і у профілі
+
+            const contentData = questMatrix[currentLocation]?.[currentDragon];
+            const mContainer = document.getElementById('missions-container');
+            
+            if (contentData) {
+                document.getElementById('story-title').innerText = contentData.title;
+                document.getElementById('story-content').innerHTML = contentData.story;
+                currentHint = contentData.hintText;
+
+                mContainer.innerHTML = '';
+                contentData.missions.forEach((mission, idx) => {
+                    const activeStateClass = mission.completed ? 'mission-card--completed' : '';
+                    
+                    mContainer.innerHTML += `
+                        <div onclick="toggleMission(${idx})" class="mission-card ${activeStateClass}">
+                            <span class="mission-card__icon">${mission.icon}</span>
+                            <div class="mission-card__text-content">
+                                <p class="mission-card__desc">${mission.desc}</p>
+                                <p class="mission-card__points">+${mission.points} балів</p>
+                            </div>
+                            <div class="mission-card__checkmark">✓</div>
+                        </div>
+                    `;
+                });
+            } else {
+                document.getElementById('story-title').innerText = "Локація в розробці";
+                document.getElementById('story-content').innerHTML = "<p>Для цього гіда тут ще немає завдань.</p>";
+                mContainer.innerHTML = '';
+                currentHint = "Немає підказок";
+            }
+        }
+
+        // Ініціалізація
+        window.onload = renderPage;
+    </script>
+</body>
+</html>
